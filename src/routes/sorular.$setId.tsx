@@ -98,7 +98,6 @@ function QuestionsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [starting, setStarting] = useState(false);
-  const [autoStatus, setAutoStatus] = useState<string | null>(null);
   const lastSavedRef = useRef(JSON.stringify({ ...empty }));
   const targetRef = useRef<{ draft: boolean; id: string | null }>({ draft: true, id: null });
 
@@ -168,46 +167,40 @@ function QuestionsPage() {
     setDraftMode(false);
   };
 
-  const newQuestion = async () => {
+  const newQuestion = () => {
     setError(null);
     setNotice(null);
-    if (JSON.stringify(form) !== lastSavedRef.current && form.question.trim()) {
-      await persist(form, true);
-    }
     targetRef.current = { draft: true, id: null };
     setSelectedId(null);
     setDraftMode(true);
     setForm({ ...empty });
     lastSavedRef.current = JSON.stringify({ ...empty });
-    setAutoStatus(null);
   };
 
-  const persist = async (snapshot: typeof empty, silent: boolean) => {
+  const persist = async (snapshot: typeof empty) => {
     const question = snapshot.question.trim();
     const a = snapshot.option_a.trim();
     const b = snapshot.option_b.trim();
     const c = snapshot.option_c.trim();
     const d = snapshot.option_d.trim();
     if (!question) {
-      if (!silent) setError("Soru metni gerekli");
-      else setAutoStatus("Taslak — henüz kaydedilmedi");
+      setError("Soru metni gerekli");
       return false;
     }
     const type = snapshot.question_type;
-    if (!silent && type === "fill" && !a) {
+    if (type === "fill" && !a) {
       setError("Doğru cevabı yazın");
       return false;
     }
-    if (!silent && type === "multiple" && (!a || !b)) {
+    if (type === "multiple" && (!a || !b)) {
       setError("İlk iki cevap (A ve B) zorunlu");
       return false;
     }
     const filled: Record<string, string> = { A: a, B: b, C: c, D: d };
-    if (!silent && type === "multiple" && !snapshot.correct_answer.split("").some((l) => filled[l])) {
+    if (type === "multiple" && !snapshot.correct_answer.split("").some((l) => filled[l])) {
       setError("Doğru cevap olarak dolu bir seçenek seçin");
       return false;
     }
-    if (silent) setAutoStatus("Kaydediliyor...");
     try {
       const extras = (snapshot.extra_answers ?? []).map((v) => v.trim()).filter(Boolean).slice(0, MAX_FILL_ANSWERS - 1);
       const payload =
@@ -230,25 +223,13 @@ function QuestionsPage() {
         await edit({ data: { ...payload, id: target.id } });
       }
       lastSavedRef.current = JSON.stringify(snapshot);
-      if (silent) setAutoStatus("Kaydedildi");
       await list.refetch();
       return true;
     } catch (caught) {
-      if (!silent) setError(caught instanceof Error ? caught.message : "Kaydedilemedi");
-      else setAutoStatus("Kaydedilemedi");
+      setError(caught instanceof Error ? caught.message : "Kaydedilemedi");
       return false;
     }
   };
-
-  useEffect(() => {
-    const snapshot = JSON.stringify(form);
-    if (snapshot === lastSavedRef.current) return;
-    const timer = window.setTimeout(() => {
-      void persist(form, true);
-    }, 900);
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form]);
 
   const save = async () => {
     setError(null);
@@ -262,7 +243,7 @@ function QuestionsPage() {
         setTitleTouched(false);
         void setInfo.refetch();
       }
-      const saved = await persist(form, false);
+      const saved = await persist(form);
       if (!saved) return;
       setNotice("Tüm değişiklikler kaydedildi");
       window.setTimeout(() => setNotice(null), 2000);
@@ -377,7 +358,7 @@ function QuestionsPage() {
                 size="icon"
                 aria-label="Yeni soru ekle"
                 title="Yeni soru ekle"
-                onClick={() => void newQuestion()}
+                onClick={newQuestion}
                 className="h-10 w-10 shrink-0 rounded-lg bg-studio-yellow text-studio-bg hover:bg-studio-yellow/90"
               >
                 <Plus />
@@ -423,7 +404,7 @@ function QuestionsPage() {
 
             <div className="border-t border-studio-line p-3">
               <Button
-                onClick={() => void newQuestion()}
+                onClick={newQuestion}
                 className={`h-11 w-full rounded-lg font-bold ${draftMode ? "bg-studio-yellow text-studio-bg" : "bg-studio-elevated text-studio-ink hover:bg-studio-line"}`}
               >
                 <Plus /> Yeni Soru
@@ -437,9 +418,6 @@ function QuestionsPage() {
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase text-studio-blue">
                 {draftMode ? "Yeni Soru" : `Soru ${String((selectedIndex >= 0 ? selectedIndex : 0) + 1).padStart(2, "0")}`}
-                {autoStatus && (
-                  <span className="ml-2 normal-case text-studio-muted">· {autoStatus}</span>
-                )}
               </p>
               <h1 className="mt-1 truncate font-studio-display text-xl text-studio-ink sm:text-2xl">
                 {draftMode ? "SORUNU TASARLA" : "SORUYU DÜZENLE"}
