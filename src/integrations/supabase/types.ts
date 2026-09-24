@@ -137,6 +137,7 @@ export type Database = {
           option_c: string
           option_d: string
           question: string
+          question_type: string
           set_id: string | null
           time_limit: number
         }
@@ -151,6 +152,7 @@ export type Database = {
           option_c: string
           option_d: string
           question: string
+          question_type?: string
           set_id?: string | null
           time_limit?: number
         }
@@ -165,6 +167,7 @@ export type Database = {
           option_c?: string
           option_d?: string
           question?: string
+          question_type?: string
           set_id?: string | null
           time_limit?: number
         }
