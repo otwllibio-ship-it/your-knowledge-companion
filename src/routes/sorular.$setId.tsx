@@ -167,9 +167,16 @@ function QuestionsPage() {
     setDraftMode(false);
   };
 
-  const newQuestion = () => {
+  const newQuestion = async () => {
     setError(null);
     setNotice(null);
+    const dirty = JSON.stringify(form) !== lastSavedRef.current;
+    const hasContent = form.question.trim() !== "";
+    if (dirty && hasContent) {
+      setSaving(true);
+      const ok = await persist(form).finally(() => setSaving(false));
+      if (!ok) return;
+    }
     targetRef.current = { draft: true, id: null };
     setSelectedId(null);
     setDraftMode(true);
