@@ -52,7 +52,7 @@ const empty = {
   option_b: "",
   option_c: "",
   option_d: "",
-  correct_answer: "A",
+  correct_answer: "",
   question_type: "multiple",
   extra_answers: [] as string[],
 };
@@ -504,7 +504,7 @@ function QuestionsPage() {
                           return { ...current, question_type: t.id, option_a: "Doğru", option_b: "Yanlış", option_c: "", option_d: "", correct_answer: "A" };
                         if (t.id === "fill")
                           return { ...current, question_type: t.id, option_a: "", option_b: "", option_c: "", option_d: "", correct_answer: "A" };
-                        return { ...current, question_type: t.id, option_a: "", option_b: "", correct_answer: "A" };
+                        return { ...current, question_type: t.id, option_a: "", option_b: "", correct_answer: "" };
                       })
                     }
                     className={`h-10 rounded-lg px-4 font-bold ${active ? "bg-studio-yellow text-studio-bg hover:bg-studio-yellow/90" : "border border-studio-line bg-transparent text-studio-muted hover:bg-studio-elevated hover:text-studio-ink"}`}
