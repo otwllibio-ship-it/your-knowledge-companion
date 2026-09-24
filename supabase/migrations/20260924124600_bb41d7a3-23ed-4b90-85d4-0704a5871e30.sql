@@ -1,0 +1,1 @@
+ALTER TABLE public.questions ALTER COLUMN correct_answer TYPE text;
