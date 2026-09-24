@@ -285,6 +285,11 @@ function QuestionsPage() {
     setError(null);
     try {
       const result = await create({ data: { setId } });
+      if (!result.code) {
+        setError(result.error ?? "Yarışma başlatılamadı");
+        setStarting(false);
+        return;
+      }
       void navigate({ to: "/host/$code", params: { code: result.code } });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Yarışma başlatılamadı");

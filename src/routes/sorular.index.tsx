@@ -51,6 +51,11 @@ function SetsPage() {
     setBusy(setId);
     try {
       const res = await create({ data: { setId } });
+      if (!res.code) {
+        setError(res.error ?? "Başlatılamadı");
+        setBusy(null);
+        return;
+      }
       void navigate({ to: "/host/$code", params: { code: res.code } });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Başlatılamadı");

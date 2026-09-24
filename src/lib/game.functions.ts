@@ -79,7 +79,9 @@ export const createRoom = createServerFn({ method: "POST" })
     questionIds = (qs ?? [])
       .filter((q) => q.question.trim() && q.option_a.trim() && (q.question_type === "fill" || q.option_b.trim()))
       .map((q) => q.id);
-    if (!questionIds.length) throw new Error("Bu sette tamamlanmış soru yok");
+    if (!questionIds.length) {
+      return { code: null as string | null, error: "Bu sette kaydedilmiş, tamamlanmış soru yok. Önce en az bir soruyu doldurup Kaydet'e basın." };
+    }
   } else {
     const { data: questions, error: qErr } = await supabase
       .from("questions")
@@ -99,7 +101,7 @@ export const createRoom = createServerFn({ method: "POST" })
       .insert({ room_code: code, question_ids: questionIds, set_id: input.setId ?? null })
       .select("room_code")
       .maybeSingle();
-    if (!error && data) return { code: data.room_code };
+    if (!error && data) return { code: data.room_code as string | null, error: null as string | null };
   }
   throw new Error("Oda oluşturulamadı, tekrar deneyin");
 });
